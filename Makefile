@@ -79,7 +79,7 @@ deploy: manifests
 	else ${KUSTOMIZE} edit add resource certmanager/certificate.yaml; fi;
 	${KUSTOMIZE} build config/default | kubectl apply -f -
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
-	sleep 10
+	sleep 2
 	${KUSTOMIZE} build config/runtimes | kubectl apply -f -
 	if [ ${KSERVE_ENABLE_SELF_SIGNED_CA} != false ]; then ./hack/self-signed-ca.sh; fi;
 
