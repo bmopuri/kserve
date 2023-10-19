@@ -92,7 +92,7 @@ deploy-dev: manifests
 	${KUSTOMIZE} build config/overlays/development | kubectl apply -f -
 	# TODO: Add runtimes as part of default deployment
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
-	sleep 2
+	sleep 10
 	${KUSTOMIZE} build config/runtimes | kubectl apply -f -
 	if [ ${KSERVE_ENABLE_SELF_SIGNED_CA} != false ]; then ./hack/self-signed-ca.sh; fi;
 
