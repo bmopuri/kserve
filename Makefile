@@ -80,8 +80,8 @@ deploy: manifests
 	${KUSTOMIZE} build config/default | kubectl apply -f -
 	if [ ${KSERVE_ENABLE_SELF_SIGNED_CA} != false ]; then ./hack/self-signed-ca.sh; fi;
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
-	sleep 2
-	${KUSTOMIZE} build config/clusterresources | kubectl apply -f -
+	sleep 10
+	${KUSTOMIZE} build config/runtimes | kubectl apply -f -
 
 
 deploy-dev: manifests
@@ -95,7 +95,7 @@ deploy-dev: manifests
 	# TODO: Add runtimes as part of default deployment
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
 	sleep 2
-	${KUSTOMIZE} build config/clusterresources | kubectl apply -f -
+	${KUSTOMIZE} build config/runtimes | kubectl apply -f -
 
 deploy-dev-sklearn: docker-push-sklearn kustomize
 	./hack/serving_runtime_image_patch.sh "kserve-sklearnserver.yaml" "${KO_DOCKER_REPO}/${SKLEARN_IMG}"
@@ -124,7 +124,7 @@ deploy-ci: manifests
 	kubectl apply -k config/overlays/test
 	# TODO: Add runtimes as part of default deployment
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
-	kubectl apply -k config/overlays/test/clusterresources
+	kubectl apply -k config/overlays/test/runtimes
 
 deploy-helm: manifests
 	helm install kserve-crd charts/kserve-crd/ --wait --timeout 180s
@@ -137,7 +137,7 @@ undeploy-dev: kustomize
 	${KUSTOMIZE} build config/overlays/development | kubectl delete -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen kustomize
+manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) paths=./pkg/apis/serving/... output:crd:dir=config/crd
 	$(CONTROLLER_GEN) rbac:roleName=kserve-manager-role paths=./pkg/controller/... output:rbac:artifacts:config=config/rbac
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths=./pkg/apis/serving/v1alpha1
@@ -337,6 +337,3 @@ apidocs:
 .PHONY: check-doc-links
 check-doc-links:
 	@python3 hack/verify-doc-links.py && echo "$@: OK"
-
-poetry-update-lockfiles:
-	bash -ec 'for value in $$(find . -name poetry.lock -exec dirname {} \;); do (cd "$${value}" && echo "Updating $${value}/poetry.lock" && poetry update --lock); done'
