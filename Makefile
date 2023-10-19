@@ -79,7 +79,7 @@ deploy: manifests
 	else ${KUSTOMIZE} edit add resource certmanager/certificate.yaml; fi;
 	${KUSTOMIZE} build config/default | kubectl apply -f -
 	kubectl wait --for=condition=ready pod -l control-plane=kserve-controller-manager -n kserve --timeout=300s
-	sleep 2
+	sleep 10
 	${KUSTOMIZE} build config/runtimes | kubectl apply -f -
 	if [ ${KSERVE_ENABLE_SELF_SIGNED_CA} != false ]; then ./hack/self-signed-ca.sh; fi;
 
@@ -136,7 +136,7 @@ undeploy-dev: kustomize
 	${KUSTOMIZE} build config/overlays/development | kubectl delete -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen kustomize
+manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) paths=./pkg/apis/serving/... output:crd:dir=config/crd
 	$(CONTROLLER_GEN) rbac:roleName=kserve-manager-role paths=./pkg/controller/... output:rbac:artifacts:config=config/rbac
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths=./pkg/apis/serving/v1alpha1
