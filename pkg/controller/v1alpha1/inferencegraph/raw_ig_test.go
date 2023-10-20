@@ -61,7 +61,7 @@ func TestCreateInferenceGraphPodSpec(t *testing.T) {
 		},
 		"withresource": {
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "resouce-ig",
+				Name:      "resource-ig",
 				Namespace: "resource-ig-namespace",
 				Annotations: map[string]string{
 					"serving.kserve.io/deploymentMode": string(constants.RawDeployment),
