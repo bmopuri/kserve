@@ -176,11 +176,8 @@ func (r *InferenceGraphReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		_, err = handleInferenceGraphRawDeployment(r.Client, r.Scheme, graph, routerConfig)
 
 		if err != nil {
-			return ctrl.Result{}, errors.Wrapf(err, "fails to reconcile inference graph raw")
+			return ctrl.Result{}, errors.Wrapf(err, "fails to reconcile inference graph raw deployment")
 		}
-		//err = fmt.Errorf("RawDeployment mode is not supported for InferenceGraph")
-		//r.Log.Error(err, "name", graph.GetName())
-		//return reconcile.Result{}, err
 	} else {
 		desired := createKnativeService(graph.ObjectMeta, graph, routerConfig)
 		err = controllerutil.SetControllerReference(graph, desired, r.Scheme)
